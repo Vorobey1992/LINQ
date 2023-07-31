@@ -46,24 +46,29 @@ namespace Task1
         public static IEnumerable<(Customer customer, DateTime DateOfEntry)> Linq4(IEnumerable<Customer> customers)
         {
             return customers
-                .Where(c => !string.IsNullOrWhiteSpace(c.PostalCode) && c.PostalCode.Any(char.IsLetter) ||
-                            string.IsNullOrEmpty(c.Region) ||
-                            !c.Phone.Contains("(") || !c.Phone.Contains(")"))
-                .Select(c => (c, DateOfEntry: c.Orders.Any() ? c.Orders.Min(o => o.OrderDate) : DateTime.MinValue))
+                .Where(c => c.Orders.Any(o => o.OrderDate != DateTime.MinValue))
+                .Select(c => (c, DateOfEntry: c.Orders.Min(o => o.OrderDate)))
                 .ToList();
         }
 
-        public static IEnumerable<(Customer customer, DateTime dateOfEntry)> Linq5(IEnumerable<Customer> customers)
+        public static IEnumerable<(Customer customer, DateTime DateOfEntry)> Linq5(IEnumerable<Customer> customers)
         {
             return customers
-                .Where(c => c.Orders.Any()) // Отфильтровываем заказчиков с пустыми заказами
-                .Select(c => (c, dateOfEntry: c.Orders.Min(o => o.OrderDate))); // Выбираем заказчика и дату первого заказа
+                .Where(c => c.Orders.Any())
+                .Select(c => (c, DateOfEntry: c.Orders.Min(o => o.OrderDate)))
+                .OrderBy(c => c.DateOfEntry) // Сортируем по дате первого заказа в возрастающем порядке
+                .ToList();
         }
 
         public static IEnumerable<Customer> Linq6(IEnumerable<Customer> customers)
         {
-            // Вернуть список заказчиков, у которых указан номер региона и он не пустой.
-            return customers.Where(c => !string.IsNullOrWhiteSpace(c.Region));
+            var result = customers
+                .Where(c => !string.IsNullOrEmpty(c.PostalCode) && c.PostalCode.Any(ch => !char.IsDigit(ch)) ||
+                            string.IsNullOrEmpty(c.Region) ||
+                            !c.Phone.Contains("(") || !c.Phone.Contains(")"))
+                .ToList();
+
+            return result;
         }
 
         public static IEnumerable<Linq7CategoryGroup> Linq7(IEnumerable<Product> products)
