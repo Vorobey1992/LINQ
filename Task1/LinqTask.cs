@@ -90,23 +90,22 @@ namespace Task1
         }
 
         public static IEnumerable<(decimal category, IEnumerable<Product> products)> Linq8(
-            IEnumerable<Product> products,
+        IEnumerable<Product> products,
             decimal cheap,
             decimal middle,
             decimal expensive
-        )
+)
         {
-            // Вернуть продукты, разделенные на три категории (дешевые, средние и дорогие) по их цене.
-            var cheapProducts = products.Where(p => p.UnitPrice <= cheap);
-            var middleProducts = products.Where(p => p.UnitPrice > cheap && p.UnitPrice <= middle);
-            var expensiveProducts = products.Where(p => p.UnitPrice > middle && p.UnitPrice <= expensive);
-
-            return new[]
+            var result = products.GroupBy(p =>
             {
-                (cheap, cheapProducts),
-                (middle, middleProducts),
-                (expensive, expensiveProducts)
-            };
+                if (p.UnitPrice <= cheap)
+                    return cheap;
+                if (p.UnitPrice <= middle)
+                    return middle;
+                return expensive;
+            }).Select(g => (category: g.Key, products: g.AsEnumerable()));
+
+            return result;
         }
 
         public static IEnumerable<(string city, int averageIncome, int averageIntensity)> Linq9(
@@ -136,7 +135,7 @@ namespace Task1
                 .Distinct()
                 .OrderBy(c => c.Length) // Сортировка по длине названия страны
                 .ThenBy(c => c); // Затем сортировка по алфавиту
-            return string.Join("", uniqueCountries);
+            return uniqueCountries.Aggregate((current, next) => current + next);
         }
     }
 }
